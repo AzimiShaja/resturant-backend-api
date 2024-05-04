@@ -1,7 +1,7 @@
 import express from "express"; // Importing the Express framework
 import { data } from "./dataset.js"; // Importing dataset containing meal and ingredient data
 const app = express(); // Creating an Express application
-const PORT = 3000; // Defining the port number
+const PORT = 3000 || process.env.PORT; // Defining the port number
 
 app.use(express.json()); // Adding middleware to parse JSON bodies
 
