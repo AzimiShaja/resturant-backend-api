@@ -58,13 +58,71 @@ app.get("/getMeal", (req, res) => {
         const { id } = req.query;
         // filter data
         const meal = data.meals.find((meal) => meal.id == id);
+
+        if (!meal) {
+            return res.status(404).json({ error: "Meal not found" });
+        }
         // send response
         res.send(meal);
     } catch (error) {
         // send error
-        res.send(error);
+        res.sendStatus(505).json({ error: "Internal server error" });
     }
 });
+
+/*
+Quality Calculation With Ingredient Qualities
+METHOD: POST
+URL: http://localhost:3000/quality 
+BODY: { meal_id: 1, chicken: "high", rice: "medium", vegetables: "low" }
+*/
+// Define endpoint to calculate quality score
+app.post("/quality", (req, res) => {
+    try {
+        if (!req.body) res.sendStatus(400).json({ error: "Missing request body" });
+
+        // Retrieve meal ID and ingredient qualities from request body
+        const { meal_id, ...ingredientQualities } = req.body;
+
+        // Find the meal in the dataset
+        const meal = data.meals.find((meal) => meal.id === parseInt(meal_id));
+
+        if (!meal) {
+            return res.status(404).json({ error: "Meal not found" });
+        }
+
+        // Calculate the total score for the meal
+        let totalScore = 0;
+
+        meal.ingredients.forEach((ingredient) => {
+            data.ingredients.forEach((dataIngredient) => {
+                if (ingredient.name === dataIngredient.name) {
+                    totalScore += getQualityScore(ingredientQualities[dataIngredient.name]);
+                }
+            });
+        });
+        totalScore /= meal.ingredients.length;
+        // Return the overall quality score as JSON response
+        res.json({ quality: totalScore });
+    } catch (error) {
+        // Handle errors
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Function to get the score for the quality level
+function getQualityScore(qualityLevel) {
+    switch (qualityLevel) {
+        case "low":
+            return 5;
+        case "medium":
+            return 10;
+        case "high":
+            return 20;
+        default:
+            return 20;
+    }
+}
 
 // server is running
 app.listen(PORT, () => {
