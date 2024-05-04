@@ -3,11 +3,13 @@ import { data } from "./dataset.js";
 const app = express();
 const PORT = 3000;
 
-/* list all meals from database
- METHOD: GET
- URL: http://localhost:3000/listMeals
- QUERY PARAMS: ?is_vegetarian=true , ?is_vegan=true
- */
+app.use(express.json());
+/* 
+Listing the Menu
+METHOD: GET
+URL: http://localhost:3000/listMeals
+QUERY PARAMS: ?is_vegetarian=true , ?is_vegan=true
+*/
 app.get("/listMeals", (req, res) => {
     try {
         // check if query params exist
@@ -33,13 +35,9 @@ app.get("/listMeals", (req, res) => {
             )
         );
         // send response
-        if (is_vegetarian === "true") {
-            res.send(vegetarianMeals);
-        } else if (is_vegan === "true") {
-            res.send(veganMeals);
-        } else {
-            res.send(data.meals);
-        }
+        if (is_vegetarian) res.send(vegetarianMeals);
+        else if (is_vegan) res.send(veganMeals);
+        else res.send(data.meals);
     } catch (error) {
         // send error
         res.send(error);
@@ -47,7 +45,7 @@ app.get("/listMeals", (req, res) => {
 });
 
 /*
-get meals by id
+Getting an Item from Menu
 METHOD: GET
 URL: http://localhost:3000/getMeal
 QUERY PARAMS: ?id=1
