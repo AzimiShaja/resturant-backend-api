@@ -222,6 +222,67 @@ app.get("/search", (req, res) => {
     }
 });
 
+/*
+Finding the Highest Quality Meal For Given Budget
+METHOD: POST
+URL: /findHighest
+BODY: { budget: 100, is_vegetarian: false, is_vegan: false }
+*/
+app.post("/findHighest", (req, res) => {
+    try {
+        const { budget, is_vegetarian = false, is_vegan = false } = req.body;
+
+        if (budget === undefined) {
+            return res.status(400).json({ error: "Missing budget parameter" });
+        }
+
+        const filteredMeals = data.meals.filter((meal) => {
+            if (is_vegetarian && !is_vegan) {
+                return (
+                    calculatePriceOfMeal(meal) <= budget &&
+                    meal.ingredients.every((ingredient) =>
+                        data.ingredients.some(
+                            ({ name, groups }) => ingredient.name === name && groups.includes("vegetarian")
+                        )
+                    )
+                );
+            } else if (is_vegan && !is_vegetarian) {
+                return (
+                    calculatePriceOfMeal(meal) <= budget &&
+                    meal.ingredients.every((ingredient) =>
+                        data.ingredients.some(
+                            ({ name, groups }) => ingredient.name === name && groups.includes("vegan")
+                        )
+                    )
+                );
+            } else {
+                return calculatePriceOfMeal(meal) <= budget;
+            }
+        });
+
+        if (filteredMeals.length === 0) {
+            return res
+                .status(404)
+                .json({ error: "No meal found below the budget or with the specified criteria" });
+        }
+
+        const highestQualityMeal = filteredMeals.reduce((a, b) => {
+            return getQualityScore(a) > getQualityScore(b) ? a : b;
+        });
+
+        res.json({
+            id: highestQualityMeal.id,
+            name: highestQualityMeal.name,
+            price: calculatePriceOfMeal(highestQualityMeal),
+            quality_score: getQualityScore(highestQualityMeal),
+            ingredients: highestQualityMeal.ingredients,
+        });
+    } catch (error) {
+        // Handle errors
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 // server is running
 app.listen(PORT, () => {
     console.log(`server is running on port ${PORT}`);
