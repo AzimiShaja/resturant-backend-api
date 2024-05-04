@@ -13,7 +13,9 @@ I confirm that this application is wrriten by me ```(Ahmad Shaja AZIMI)``` using
 
 ## or 
 * just visit https://restaurant-api-app.vercel.app/ to see all the endpooints.
-* You can use live website to test the backend server. 
+* You can use live website to test the backend server.
+<img width="1679" alt="image" src="https://github.com/AzimiShaja/ahmadshaja-azimi-otsimo-internship-task-2024/assets/110715621/b5cbcbd9-88f4-4460-af5e-12359ccc12d2">
+
 
 # Endpoints
 ## 1. Get Restaurant Menu
