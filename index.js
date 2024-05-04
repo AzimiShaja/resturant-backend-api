@@ -40,7 +40,7 @@ app.get("/listMeals", (req, res) => {
         else res.send(data.meals);
     } catch (error) {
         // send error
-        res.send(error);
+        res.sendStatus(505).json({ error: "Internal server error" });
     }
 });
 
@@ -187,6 +187,32 @@ app.post("/random", (req, res) => {
     } catch (error) {
         // Handle errors
         res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+/*
+Searching For a Meal
+METHOD: GET
+URL: /search
+PARAMS: query
+*/
+app.get("/search", (req, res) => {
+    try {
+        // get query params
+        const { query } = req.query;
+
+        if (!query) {
+            return res.status(400).json({ error: "Missing query parameter" });
+        }
+        // filter data
+        const filteredMeals = data.meals.filter((meal) =>
+            meal.name.toLowerCase().includes(query.toLowerCase())
+        );
+        // send response
+        res.send(filteredMeals);
+    } catch (error) {
+        // send error
+        res.sendStatus(505).json({ error: "Internal server error" });
     }
 });
 
