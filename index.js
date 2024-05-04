@@ -74,7 +74,6 @@ METHOD: POST
 URL: http://localhost:3000/quality 
 BODY: { meal_id: 1, chicken: "high", rice: "medium", vegetables: "low" }
 */
-// Define endpoint to calculate quality score
 app.post("/quality", (req, res) => {
     try {
         if (!req.body) res.sendStatus(400).json({ error: "Missing request body" });
@@ -113,7 +112,6 @@ Price Calculation With Ingredient Qualities
 METHOD: POST
 URL: http://localhost:3000/price
 BODY: { meal_id: 1, chicken: "high", rice: "medium", vegetables: "low" }
-
 */
 app.post("/price", (req, res) => {
     try {
@@ -162,6 +160,36 @@ app.post("/price", (req, res) => {
     }
 });
 
+/*
+I'm feeling lucky.
+METHOD: POST
+URL: /random
+BODY: { budget: 100 }
+*/
+app.post("/random", (req, res) => {
+    try {
+        const { budget } = req.body;
+        if (budget === undefined) {
+            // Generate a random meal
+            const randomMeal = data.meals[Math.floor(Math.random() * data.meals.length)];
+            return res.json({ meal: randomMeal });
+        } else {
+            // Generate a random meal below the budget
+            const affordableMeals = data.meals.filter((meal) => calculatePriceOfMeal(meal) <= budget);
+
+            if (affordableMeals.length === 0) {
+                return res.status(404).json({ error: "No meal found below the budget" });
+            } else {
+                const randomMeal = affordableMeals[Math.floor(Math.random() * affordableMeals.length)];
+                return res.json({ meal: randomMeal });
+            }
+        }
+    } catch (error) {
+        // Handle errors
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 // server is running
 app.listen(PORT, () => {
     console.log(`server is running on port ${PORT}`);
@@ -179,4 +207,17 @@ function getQualityScore(qualityLevel) {
         default:
             return 20;
     }
+}
+function calculatePriceOfMeal(meal) {
+    let totalPrice = 0;
+    meal.ingredients.forEach((ingredient) => {
+        data.ingredients.forEach((dataIngredient) => {
+            if (ingredient.name === dataIngredient.name) {
+                dataIngredient.options.forEach((option) => {
+                    totalPrice += option.price;
+                });
+            }
+        });
+    });
+    return totalPrice;
 }
