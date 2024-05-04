@@ -181,7 +181,13 @@ app.post("/random", (req, res) => {
                 return res.status(404).json({ error: "No meal found below the budget" });
             } else {
                 const randomMeal = affordableMeals[Math.floor(Math.random() * affordableMeals.length)];
-                return res.json({ meal: randomMeal });
+                return res.json({
+                    id: randomMeal.id,
+                    name: randomMeal.name,
+                    price: calculatePriceOfMeal(randomMeal),
+                    quality_score: getQualityScore(randomMeal),
+                    ingredients: randomMeal.ingredients,
+                });
             }
         }
     } catch (error) {
