@@ -1,9 +1,10 @@
-import express from "express";
-import { data } from "./dataset.js";
-const app = express();
-const PORT = 3000;
+import express from "express"; // Importing the Express framework
+import { data } from "./dataset.js"; // Importing dataset containing meal and ingredient data
+const app = express(); // Creating an Express application
+const PORT = 3000; // Defining the port number
 
-app.use(express.json());
+app.use(express.json()); // Adding middleware to parse JSON bodies
+
 /* 
 Listing the Menu
 METHOD: GET
@@ -15,7 +16,7 @@ app.get("/listMeals", (req, res) => {
         // check if query params exist
         const { is_vegetarian, is_vegan } = req.query;
 
-        // filter data
+        // filter data for vegan meals
         const veganMeals = data.meals.filter((meal) =>
             meal.ingredients.every((ingredient) =>
                 data.ingredients.some(
@@ -24,7 +25,7 @@ app.get("/listMeals", (req, res) => {
             )
         );
 
-        // filter data
+        // filter data for vegetarian meals
         const vegetarianMeals = data.meals.filter((meal) =>
             meal.ingredients.every((ingredient) =>
                 data.ingredients.some(
@@ -34,12 +35,12 @@ app.get("/listMeals", (req, res) => {
                 )
             )
         );
-        // send response
+        // send response based on query params
         if (is_vegetarian) res.send(vegetarianMeals);
         else if (is_vegan) res.send(veganMeals);
         else res.send(data.meals);
     } catch (error) {
-        // send error
+        // send error response
         res.sendStatus(505).json({ error: "Internal server error" });
     }
 });
@@ -54,16 +55,16 @@ app.get("/getMeal", (req, res) => {
     try {
         // get query params
         const { id } = req.query;
-        // filter data
+        // filter data for meal with given id
         const meal = data.meals.find((meal) => meal.id == id);
 
+        // send response
         if (!meal) {
             return res.status(404).json({ error: "Meal not found" });
         }
-        // send response
         res.send(meal);
     } catch (error) {
-        // send error
+        // send error response
         res.sendStatus(505).json({ error: "Internal server error" });
     }
 });
@@ -76,6 +77,7 @@ BODY: { meal_id: 1, chicken: "high", rice: "medium", vegetables: "low" }
 */
 app.post("/quality", (req, res) => {
     try {
+        // check if request body exists
         if (!req.body) res.sendStatus(400).json({ error: "Missing request body" });
 
         // Retrieve meal ID and ingredient qualities from request body
@@ -84,13 +86,13 @@ app.post("/quality", (req, res) => {
         // Find the meal in the dataset
         const meal = data.meals.find((meal) => meal.id === parseInt(meal_id));
 
+        // Check if meal exists
         if (!meal) {
             return res.status(404).json({ error: "Meal not found" });
         }
 
         // Calculate the total score for the meal
         let totalScore = 0;
-
         meal.ingredients.forEach((ingredient) => {
             data.ingredients.forEach((dataIngredient) => {
                 if (ingredient.name === dataIngredient.name) {
@@ -98,7 +100,7 @@ app.post("/quality", (req, res) => {
                 }
             });
         });
-        totalScore /= meal.ingredients.length;
+        totalScore /= meal.ingredients.length; // Normalize score
         // Return the overall quality score as JSON response
         res.json({ quality: totalScore });
     } catch (error) {
@@ -115,6 +117,7 @@ BODY: { meal_id: 1, chicken: "high", rice: "medium", vegetables: "low" }
 */
 app.post("/price", (req, res) => {
     try {
+        // check if request body exists
         if (!req.body) return res.status(400).json({ error: "Missing request body" });
 
         // Retrieve meal ID and ingredient qualities from request body
@@ -301,6 +304,8 @@ function getQualityScore(qualityLevel) {
             return 20;
     }
 }
+
+// Function to calculate the total price of a meal
 function calculatePriceOfMeal(meal) {
     let totalPrice = 0;
     meal.ingredients.forEach((ingredient) => {
